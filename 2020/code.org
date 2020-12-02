@@ -1,0 +1,121 @@
+#+TITLE: Day1
+
+* day 1
+
+** read inputs
+
+
+#+begin_src amm
+
+import ammonite.ops._
+
+val pathInp : Path = pwd/"inputs"
+val inputs = read.lines! pathInp/"day1.txt"
+val ips =inputs.map(_.toInt).toList
+#+end_src
+
+
+** Part 1
+#+begin_src amm
+def findNumbers(lst:List[Int],s:Int):Option[(Int,Int)] ={
+lst match {
+      case x::xs => val num = xs.find(x=> (lst.head + x) == s)
+        if(num.nonEmpty)
+          Some((lst.head,num.get))
+        else
+          findNumbers(xs,s)
+      case Nil => None  
+    }
+}
+
+val nums= findNumbers(ips,2020)
+nums.get._1 * nums.get._2
+
+#+end_src
+
+** Part 2
+#+begin_src amm
+def FindThree(lst:List[Int]):Option[(Int,Int,Int)] = {
+
+  lst match {
+    case x::xs => val n = findNumbers(xs,2020-x)
+      if(n.nonEmpty) Some((n.get._1,n.get._2,x))
+      else FindThree(xs)
+    case Nil => None
+  }
+}
+
+val n = FindThree(ips).get
+n._1 * n._2 * n._3
+#+end_src
+
+
+* Day 2
+** Input
+#+begin_src amm :result value
+
+import ammonite.ops._
+
+val pathInp : Path = pwd/"inputs"
+val inputs = read.lines! pathInp/"day2.txt"
+
+case class Password(start:Int,end:Int, letter:Char, pass:String)
+def getRange(in:String):(Int,Int)={
+  val r = in.split("-")
+  (r(0).toInt,r(1).toInt)
+}
+
+val passwords = inputs.map(_.split(" ")).map{
+  x=>
+  val r=getRange(x(0))
+  Password(r._1,r._2,x(1).charAt(0),x(2))
+    }
+#+end_src
+
+
+
+** Part 1
+#+begin_src amm :result value
+def checkPassword(p:Password) ={
+ val len =  p.pass.groupBy(identity).getOrElse(p.letter,"").length
+  len>=p.start & len<=p.end
+}
+passwords.map(checkPassword).groupBy(identity).mapValues(_.size)
+
+#+end_src
+
+
+*** Tests
+#+begin_src amm
+
+
+val testInp =List("1-3 a: abcde",
+"1-3 b: cdefg",
+"2-9 c: ccccccccc")
+
+val testPasswords = testInp.map(_.split(" ")).map{
+  x=>
+  val r=getRange(x(0))
+  Password(r._1,r._2,x(1).charAt(0),x(2))
+    }
+testPasswords.map(checkPassword).groupBy(identity).mapValues(_.size)
+#+end_src
+
+
+
+** Part 2
+#+begin_src amm :result value
+
+def newPolicy(p:Password)={
+  val a = p.pass(p.start -1)
+  val b = p.pass(p.end -1)
+
+    (a != b) && (a==p.letter || b==p.letter) 
+
+}
+
+    passwords.map(newPolicy).groupBy(identity).mapValues(_.size)
+
+#+end_src
+
+
