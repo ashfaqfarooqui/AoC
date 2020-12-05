@@ -1,4 +1,5 @@
-#+TITLE: Day1
+#+TITLE: AoC 2020
+#+Startup: overview
 
 * day 1
 
@@ -119,3 +120,2788 @@ def newPolicy(p:Password)={
 #+end_src
 
 
+
+
+* Day 3
+** Input
+#+begin_src amm :results value
+
+import ammonite.ops._
+
+val pathInp : Path = pwd/"inputs"
+val inputs = read.lines! pathInp/"day3.txt" toList
+
+
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+import ammonite.ops._
+
+
+pathInp: Path = /home/ashfaqf/Code/AdventOfCode/2020/inputs
+inputs: List[String] = List(
+  "........#..#.##.#..............",
+  "...#...............#.#.........",
+  "...#..#...#..##....#...........",
+  "...#.............#....#.....#..",
+  "..#......#..#...#.......#......",
+  "..............##...............",
+  "#.......#.........#......#....#",
+  ".#.....###.....#...#.#.#...#...",
+...
+#+end_example
+
+
+
+
+
+
+** part 1
+#+begin_src amm
+
+def traverse(moveRight:Int,moveDown:Int)(map:List[String],currentPos:Int,acc:Int):Int={
+  def isTree(s:String,p:Int):Int ={
+    if(s(p%(s.length))=='#') 1 else 0
+  }
+    map match {
+            case Nil => acc
+      case x::xs => traverse(moveRight,moveDown)(xs.drop(moveDown-1),currentPos+moveRight,isTree(x,currentPos) + acc)
+    }
+}
+
+traverse(3,1)(inputs,0,0)
+
+#+end_src
+
+#+RESULTS:
+: defined function traverse
+: res1_1: Int = 250
+
+*** Test
+#+begin_src amm
+val tst = List("..##.......",
+"#...#...#..",
+".#....#..#.",
+"..#.#...#.#",
+".#...##..#.",
+"..#.##.....",
+".#.#.#....#",
+".#........#",
+"#.##...#...",
+"#...##....#",
+".#..#...#.#")
+
+traverse(tst,0,0)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+0
+3
+6
+9
+1
+4
+7
+10
+2
+5
+8
+tst: List[String] = List(
+  "..##.......",
+  "#...#...#..",
+  ".#....#..#.",
+  "..#.#...#.#",
+  ".#...##..#.",
+  "..#.##.....",
+  ".#.#.#....#",
+  ".#........#",
+...
+res22_1: Int = 7
+#+end_example
+
+** Part 2
+#+begin_src amm
+List((1,1),(3,1),(5,1),(7,1),(1,2)).map(x=> traverse(x._1,x._2)(inputs,0,0)).product
+#+end_src
+
+#+RESULTS:
+: res2: Int = 1592662500
+* Day 4
+** Tst Input
+#+begin_src amm
+val inp:String = s"""pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+hcl:#623a2f
+
+eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
+
+hcl:#888785
+hgt:164cm byr:2001 iyr:2015 cid:88
+pid:545766238 ecl:hzl
+eyr:2022
+
+iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719"""
+
+#+end_src
+
+#+begin_src amm
+val invalidPass = s"""eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+iyr:2019
+hcl:#602927 eyr:1967 hgt:170cm
+ecl:grn pid:012533040 byr:1946
+
+hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+
+hgt:59cm ecl:zzz
+eyr:2038 hcl:74454a iyr:2023
+pid:3556412378 byr:2007"""
+
+#+end_src
+#+RESULTS:
+#+begin_example
+invalidPass: String = """eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+iyr:2019
+hcl:#602927 eyr:1967 hgt:170cm
+ecl:grn pid:012533040 byr:1946
+
+hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+
+hgt:59cm ecl:zzz
+eyr:2038 hcl:74454a iyr:2023
+pid:3556412378 byr:2007"""
+#+end_example
+
+** Input
+#+begin_src amm :results value
+
+import ammonite.ops._
+
+val pathInp : Path = pwd/"inputs"
+val inputs = read! pathInp/"day4.txt" split("\n\n")
+
+val tstInp = invalidPass split("\n\n")
+val rawPassports = inputs.map{_.split("\\s+").map{a=>
+             val item = a.split(":")
+           item(0)->item(1)}.toMap
+}
+rawPassports.length
+    // byr (Birth Year)
+    // iyr (Issue Year)
+    // eyr (Expiration Year)
+    // hgt (Height)
+    // hcl (Hair Color)
+    // ecl (Eye Color)
+    // pid (Passport ID)
+    // cid (Country ID)
+
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+import ammonite.ops._
+
+
+pathInp: Path = /home/ashfaqf/Code/AdventOfCode/2020/inputs
+inputs: Array[String] = Array(
+  """hgt:159cm
+pid:561068005 eyr:2025 iyr:2017 cid:139 ecl:blu hcl:#ceb3a1
+byr:1940""",
+  """iyr:2014
+byr:1986 pid:960679613 eyr:2025 ecl:hzl""",
+  """cid:211 ecl:blu hcl:#7d3b0c iyr:2011 pid:006632702
+byr:1982 eyr:2023 hgt:68in""",
+  """hcl:#341e13 hgt:192 iyr:2028
+ecl:utc
+eyr:2027 byr:1979 pid:653515689""",
+  """eyr:2026 hgt:161cm ecl:#1850b8
+pid:298779494 hcl:b2114e iyr:1953""",
+  """hgt:155cm
+hcl:#a97842 iyr:2019
+ecl:gry byr:1939
+pid:935099157 eyr:2027""",
+  """eyr:2024 ecl:grn
+pid:102781360 byr:1962 iyr:2013 hcl:#602927""",
+  """hcl:#602927 hgt:152cm
+...
+tstInp: Array[String] = Array(
+  """eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926""",
+  """iyr:2019
+hcl:#602927 eyr:1967 hgt:170cm
+ecl:grn pid:012533040 byr:1946""",
+  """hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277""",
+  """hgt:59cm ecl:zzz
+eyr:2038 hcl:74454a iyr:2023
+pid:3556412378 byr:2007"""
+)
+rawPassports: Array[Map[String, String]] = Array(
+  HashMap(
+    "ecl" -> "blu",
+    "byr" -> "1940",
+    "eyr" -> "2025",
+    "iyr" -> "2017",
+    "hgt" -> "159cm",
+    "hcl" -> "#ceb3a1",
+    "cid" -> "139",
+    "pid" -> "561068005"
+  ),
+  HashMap(
+    "ecl" -> "hzl",
+    "byr" -> "1986",
+    "eyr" -> "2025",
+    "pid" -> "960679613",
+    "iyr" -> "2014"
+  ),
+  HashMap(
+    "ecl" -> "blu",
+...
+res44_5: Int = 280
+#+end_example
+
+
+
+
+** Part 1
+#+begin_src amm
+
+val requiredFields = List("byr", "iyr", "eyr", "hgt", "hcl", "ecl","pid")
+def allFieldsPresent(p:Map[String,String])= requiredFields.forall(p.contains)
+
+
+val acceptablePassports = rawPassports.filter(allFieldsPresent)
+acceptablePassports.length
+
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+requiredFields: List[String] = List("byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid")
+defined function allFieldsPresent
+acceptablePassports: Array[Map[String, String]] = Array(
+  HashMap(
+    "ecl" -> "blu",
+    "byr" -> "1940",
+    "eyr" -> "2025",
+    "iyr" -> "2017",
+    "hgt" -> "159cm",
+    "hcl" -> "#ceb3a1",
+    "cid" -> "139",
+    "pid" -> "561068005"
+  ),
+  HashMap(
+    "ecl" -> "blu",
+    "byr" -> "1982",
+    "eyr" -> "2023",
+    "iyr" -> "2011",
+    "hgt" -> "68in",
+    "hcl" -> "#7d3b0c",
+    "cid" -> "211",
+    "pid" -> "006632702"
+...
+res45_3: Int = 202
+#+end_example
+
+
+
+
+** Part 2
+- byr (Birth Year) - four digits; at least 1920 and at most 2002.
+- iyr (Issue Year) - four digits; at least 2010 and at most 2020.
+- eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
+- hgt (Height) - a number followed by either cm or in:
+
+   -  If cm, the number must be at least 150 and at most 193.
+   -  If in, the number must be at least 59 and at most 76.
+
+- hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
+- ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
+- pid (Passport ID) - a nine-digit number, including leading zeroes.
+- cid (Country ID) - ignored, missing or not
+#+begin_src amm
+
+
+
+def checkValid(in:(String,String)):Boolean={
+
+def checkHgt(h:String)={
+val hgt =   h.takeWhile(Character.isDigit).toInt
+val u = h.dropWhile(Character.isDigit)
+if(u=="cm") hgt>=150 && hgt<=193
+else if(u=="in") hgt>=59 && hgt<= 76
+else false
+}
+
+in match{
+    case ("byr",b:String) => b.toInt >= 1920 && b.toInt <= 2002
+    case ("iyr",b:String) => b.toInt >= 2010 && b.toInt <= 2020
+case ("eyr",b:String) =>  b.toInt >= 2020 && b.toInt <= 2030
+case ("hgt",b:String) => checkHgt(b)
+case ("ecl",b:String) => List("amb", "blu", "brn", "gry", "grn", "hzl", "oth").contains(b)
+case ("hcl",b:String) => b(0)=='#' && b.drop(1).forall(c=>Character.isDigit(c) || List('a','b','c','d','e','f').contains(c))
+case ("pid",b:String) => b.length == 9
+case ("cid",_) => true
+case _ => false
+  }
+
+}
+
+
+val validPassports = acceptablePassports.filter(p=> p.forall(checkValid))
+validPassports.length
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Checking (ecl,blu)
+got: true
+Checking (byr,1940)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,159cm)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (cid,139)
+got: true
+Checking (pid,561068005)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,1982)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,68in)
+got: true
+Checking (hcl,#7d3b0c)
+got: true
+Checking (cid,211)
+got: true
+Checking (pid,006632702)
+got: true
+Checking (ecl,utc)
+got: false
+Checking (ecl,gry)
+got: true
+Checking (byr,1939)
+got: true
+Checking (eyr,2027)
+got: true
+Checking (pid,935099157)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,155cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1984)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (pid,863872932)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,190cm)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1966)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,189cm)
+got: true
+Checking (hcl,#efcc98)
+got: true
+Checking (cid,166)
+got: true
+Checking (pid,894418497)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1953)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (pid,948173962)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,166cm)
+got: true
+Checking (hcl,#6b5442)
+got: true
+Checking (ecl,#829d2e)
+got: false
+Checking (ecl,amb)
+got: true
+Checking (byr,1981)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,178cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (cid,251)
+got: true
+Checking (pid,625590775)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,2014)
+got: false
+Checking (ecl,#78f4fa)
+got: false
+Checking (ecl,brn)
+got: true
+Checking (byr,1936)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,174cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (cid,289)
+got: true
+Checking (pid,868305933)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1940)
+got: true
+Checking (eyr,2027)
+got: true
+Checking (pid,675209536)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,154cm)
+got: true
+Checking (hcl,#2a6308)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1954)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (pid,186cm)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,1927)
+got: true
+Checking (eyr,2027)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,177cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (cid,154)
+got: true
+Checking (pid,725111435)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1942)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,193cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (cid,55)
+got: true
+Checking (pid,801551597)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1932)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,162cm)
+got: true
+Checking (hcl,#6b5442)
+got: true
+Checking (cid,176)
+got: true
+Checking (pid,896180324)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1998)
+got: true
+Checking (eyr,1966)
+got: false
+Checking (ecl,#1e935c)
+got: false
+Checking (ecl,gry)
+got: true
+Checking (byr,1925)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (pid,303312675)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,168cm)
+got: true
+Checking (hcl,#602927)
+got: true
+Checking (ecl,#9524e0)
+got: false
+Checking (ecl,#689e88)
+got: false
+Checking (ecl,blu)
+got: true
+Checking (byr,1997)
+got: true
+Checking (eyr,2027)
+got: true
+Checking (pid,719820090)
+got: true
+Checking (iyr,2020)
+got: true
+Checking (hgt,165cm)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1953)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,185cm)
+got: true
+Checking (hcl,#efcc98)
+got: true
+Checking (cid,230)
+got: true
+Checking (pid,241723456)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1936)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (pid,064253102)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,156cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1987)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,150cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (cid,332)
+got: true
+Checking (pid,#4e4a46)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,1953)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (pid,910793005)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,67in)
+got: true
+Checking (hcl,#341e13)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1930)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (iyr,2024)
+got: false
+Checking (ecl,hzl)
+got: true
+Checking (byr,1921)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (pid,024916763)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,162cm)
+got: true
+Checking (hcl,#efcc98)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1941)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (pid,610328167)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,169cm)
+got: true
+Checking (hcl,#6b5442)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1941)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (pid,907508207)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,186cm)
+got: true
+Checking (hcl,#341e13)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1925)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,159cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (cid,323)
+got: true
+Checking (pid,903196231)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,2030)
+got: false
+Checking (ecl,blu)
+got: true
+Checking (byr,1972)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,68in)
+got: true
+Checking (hcl,#602927)
+got: true
+Checking (cid,234)
+got: true
+Checking (pid,257420555)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1974)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (pid,353127736)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,152cm)
+got: true
+Checking (hcl,#7d3b0c)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1924)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (pid,942207567)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,68in)
+got: true
+Checking (hcl,#69929e)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1990)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,185cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (cid,90)
+got: true
+Checking (pid,947625812)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,1996)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (pid,437669135)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,175cm)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1937)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (pid,513963895)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,157cm)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1920)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (pid,559150893)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,176cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1982)
+got: true
+Checking (eyr,1961)
+got: false
+Checking (ecl,brn)
+got: true
+Checking (byr,1935)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (iyr,2013)
+got: true
+Checking (hgt,182cm)
+got: true
+Checking (hcl,#888785)
+got: true
+Checking (cid,256)
+got: true
+Checking (pid,307171649)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,2009)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,2013)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,1930)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (iyr,2020)
+got: true
+Checking (hgt,188cm)
+got: true
+Checking (hcl,#6b5442)
+got: true
+Checking (cid,267)
+got: true
+Checking (pid,949963673)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1935)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (pid,254482159)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,165cm)
+got: true
+Checking (hcl,#b6652a)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1969)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,151cm)
+got: true
+Checking (hcl,#602927)
+got: true
+Checking (cid,343)
+got: true
+Checking (pid,578662559)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,2002)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,152cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (cid,225)
+got: true
+Checking (pid,558586208)
+got: true
+Checking (ecl,gmt)
+got: false
+Checking (ecl,hzl)
+got: true
+Checking (byr,1970)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (iyr,2020)
+got: true
+Checking (hgt,155cm)
+got: true
+Checking (hcl,#6b5442)
+got: true
+Checking (cid,185)
+got: true
+Checking (pid,698123164)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1949)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,64in)
+got: true
+Checking (hcl,#6b5442)
+got: true
+Checking (cid,324)
+got: true
+Checking (pid,149063285)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1962)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,185cm)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (cid,116)
+got: true
+Checking (pid,416329937)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1960)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (iyr,2020)
+got: true
+Checking (hgt,71in)
+got: true
+Checking (hcl,#888785)
+got: true
+Checking (cid,53)
+got: true
+Checking (pid,590574853)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1977)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (pid,834729501)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,72in)
+got: true
+Checking (hcl,#604861)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1940)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (pid,111536282)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,69in)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1958)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (pid,045765056)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,186cm)
+got: true
+Checking (hcl,#cfa07d)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,2017)
+got: false
+Checking (ecl,oth)
+got: true
+Checking (byr,1984)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (pid,927074474)
+got: true
+Checking (iyr,2013)
+got: true
+Checking (hgt,168cm)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1968)
+got: true
+Checking (eyr,2027)
+got: true
+Checking (pid,948677443)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,186cm)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1960)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,170cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (cid,260)
+got: true
+Checking (pid,500330326)
+got: true
+Checking (ecl,utc)
+got: false
+Checking (ecl,gry)
+got: true
+Checking (byr,1922)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,164cm)
+got: true
+Checking (hcl,#c0946f)
+got: true
+Checking (cid,160)
+got: true
+Checking (pid,867476938)
+got: true
+Checking (ecl,#8bd8f4)
+got: false
+Checking (ecl,hzl)
+got: true
+Checking (byr,1945)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (pid,482664712)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,172cm)
+got: true
+Checking (hcl,#602927)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1945)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (pid,846949920)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,170cm)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,2002)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (pid,788563693)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,172cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (ecl,#46a7d7)
+got: false
+Checking (ecl,brn)
+got: true
+Checking (byr,1981)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (iyr,2013)
+got: true
+Checking (hgt,189cm)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (cid,313)
+got: true
+Checking (pid,386584267)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1931)
+got: true
+Checking (eyr,2027)
+got: true
+Checking (pid,435568613)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,71in)
+got: true
+Checking (hcl,#7d3b0c)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1989)
+got: true
+Checking (eyr,2027)
+got: true
+Checking (pid,761106563)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,60in)
+got: true
+Checking (hcl,#efcc98)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1980)
+got: true
+Checking (eyr,2027)
+got: true
+Checking (pid,68527368)
+got: false
+Checking (ecl,#9cf598)
+got: false
+Checking (ecl,hzl)
+got: true
+Checking (byr,1978)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,171cm)
+got: true
+Checking (hcl,#602927)
+got: true
+Checking (cid,254)
+got: true
+Checking (pid,311990731)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,1950)
+got: true
+Checking (eyr,2027)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,184in)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,1920)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,192cm)
+got: true
+Checking (hcl,#341e13)
+got: true
+Checking (cid,61)
+got: true
+Checking (pid,953859016)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1942)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (pid,149020634)
+got: true
+Checking (iyr,2021)
+got: false
+Checking (ecl,oth)
+got: true
+Checking (byr,2002)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (pid,196082064)
+got: true
+Checking (iyr,2020)
+got: true
+Checking (hgt,176cm)
+got: true
+Checking (hcl,#efcc98)
+got: true
+Checking (ecl,#d7a600)
+got: false
+Checking (ecl,hzl)
+got: true
+Checking (byr,1947)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (iyr,2020)
+got: true
+Checking (hgt,150cm)
+got: true
+Checking (hcl,#341e13)
+got: true
+Checking (cid,254)
+got: true
+Checking (pid,716596533)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1922)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (pid,190601635)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,71in)
+got: true
+Checking (hcl,#18171d)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1938)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (pid,568504071)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,178cm)
+got: true
+Checking (hcl,#efcc98)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1983)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,168cm)
+got: true
+Checking (hcl,#c0946f)
+got: true
+Checking (cid,170)
+got: true
+Checking (pid,921417345)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,2024)
+got: false
+Checking (ecl,amb)
+got: true
+Checking (byr,1946)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (pid,654181902)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,156cm)
+got: true
+Checking (hcl,#733820)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1940)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,189cm)
+got: true
+Checking (hcl,#fffffd)
+got: true
+Checking (cid,149)
+got: true
+Checking (pid,419593669)
+got: true
+Checking (ecl,lzr)
+got: false
+Checking (ecl,#d82c54)
+got: false
+Checking (ecl,zzz)
+got: false
+Checking (ecl,amb)
+got: true
+Checking (byr,1982)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (pid,405789549)
+got: true
+Checking (iyr,2013)
+got: true
+Checking (hgt,161cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1930)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (pid,775860836)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,184cm)
+got: true
+Checking (hcl,#fffffd)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1979)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (pid,853915000)
+got: true
+Checking (iyr,2020)
+got: true
+Checking (hgt,171cm)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1931)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,169cm)
+got: true
+Checking (hcl,#18171d)
+got: true
+Checking (cid,224)
+got: true
+Checking (pid,244459567)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,1953)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,59in)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (cid,308)
+got: true
+Checking (pid,466915764)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1940)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (pid,950614940)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,179cm)
+got: true
+Checking (hcl,#7d3b0c)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,2010)
+got: false
+Checking (ecl,oth)
+got: true
+Checking (byr,1975)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,193cm)
+got: true
+Checking (hcl,#18171d)
+got: true
+Checking (cid,216)
+got: true
+Checking (pid,684529055)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1951)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (pid,749102509)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,150cm)
+got: true
+Checking (hcl,#cfa07d)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1941)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (pid,937451204)
+got: true
+Checking (iyr,2020)
+got: true
+Checking (hgt,171cm)
+got: true
+Checking (hcl,#341e13)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1961)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,157cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (cid,69)
+got: true
+Checking (pid,174789690)
+got: true
+Checking (ecl,#2dcb50)
+got: false
+Checking (ecl,gry)
+got: true
+Checking (byr,1994)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (pid,564165515)
+got: true
+Checking (iyr,1997)
+got: false
+Checking (ecl,blu)
+got: true
+Checking (byr,1996)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,184cm)
+got: true
+Checking (hcl,#602927)
+got: true
+Checking (cid,130)
+got: true
+Checking (pid,897871188)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1937)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (pid,012591439)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,176cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1965)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (pid,177120440)
+got: true
+Checking (iyr,2013)
+got: true
+Checking (hgt,193cm)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1934)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (pid,370860309)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,157cm)
+got: true
+Checking (hcl,#341e13)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,2001)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (pid,194361427)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,183cm)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1969)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (pid,157651787)
+got: true
+Checking (iyr,2020)
+got: true
+Checking (hgt,185cm)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,2011)
+got: false
+Checking (ecl,grt)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,1994)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (pid,554994156)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,179cm)
+got: true
+Checking (hcl,#83b224)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1943)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,168cm)
+got: true
+Checking (hcl,#cfa07d)
+got: true
+Checking (cid,125)
+got: true
+Checking (pid,418786991)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1951)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,64in)
+got: true
+Checking (hcl,#cfa07d)
+got: true
+Checking (cid,243)
+got: true
+Checking (pid,382615614)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1923)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (iyr,2013)
+got: true
+Checking (hgt,154cm)
+got: true
+Checking (hcl,#b6652a)
+got: true
+Checking (cid,174)
+got: true
+Checking (pid,274036240)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1979)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,188cm)
+got: true
+Checking (hcl,#b6652a)
+got: true
+Checking (cid,130)
+got: true
+Checking (pid,646985829)
+got: true
+Checking (ecl,#12c807)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,1982)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (pid,522812862)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,188cm)
+got: true
+Checking (hcl,#733820)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,2023)
+got: false
+Checking (ecl,hzl)
+got: true
+Checking (byr,1932)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,157cm)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (cid,70)
+got: true
+Checking (pid,288363970)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1992)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,70in)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (cid,189)
+got: true
+Checking (pid,539896055)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1939)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (pid,851235247)
+got: true
+Checking (iyr,2013)
+got: true
+Checking (hgt,170cm)
+got: true
+Checking (hcl,#fffffd)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1936)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,167cm)
+got: true
+Checking (hcl,#c0946f)
+got: true
+Checking (cid,297)
+got: true
+Checking (pid,463230636)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1947)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (pid,291401545)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,185cm)
+got: true
+Checking (hcl,#b6652a)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1991)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,150cm)
+got: true
+Checking (hcl,#733820)
+got: true
+Checking (cid,290)
+got: true
+Checking (pid,612595763)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1956)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (pid,382721925)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,188cm)
+got: true
+Checking (hcl,#b6652a)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1947)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (pid,874004905)
+got: true
+Checking (iyr,2029)
+got: false
+Checking (ecl,gry)
+got: true
+Checking (byr,1959)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,165cm)
+got: true
+Checking (hcl,#733820)
+got: true
+Checking (cid,286)
+got: true
+Checking (pid,164334257)
+got: true
+Checking (ecl,utc)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,1952)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (pid,604128460)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,152cm)
+got: true
+Checking (hcl,#7d3b0c)
+got: true
+Checking (ecl,#158994)
+got: false
+Checking (ecl,utc)
+got: false
+Checking (ecl,dne)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,1938)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,191cm)
+got: true
+Checking (hcl,#18171d)
+got: true
+Checking (cid,327)
+got: true
+Checking (pid,514596186)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,2020)
+got: false
+Checking (ecl,lzr)
+got: false
+Checking (ecl,#10b2ed)
+got: false
+Checking (ecl,hzl)
+got: true
+Checking (byr,1965)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,180cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (cid,189)
+got: true
+Checking (pid,832184923)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1987)
+got: true
+Checking (eyr,2027)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,64in)
+got: true
+Checking (hcl,01f3d7)
+got: false
+Checking (ecl,oth)
+got: true
+Checking (byr,1975)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,180cm)
+got: true
+Checking (hcl,#6b5442)
+got: true
+Checking (cid,336)
+got: true
+Checking (pid,296100726)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1922)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,181cm)
+got: true
+Checking (hcl,#ceb3a1)
+got: true
+Checking (cid,346)
+got: true
+Checking (pid,364719801)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,1928)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,184cm)
+got: true
+Checking (hcl,#1c7f1d)
+got: true
+Checking (cid,205)
+got: true
+Checking (pid,694275035)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,2001)
+got: true
+Checking (eyr,1970)
+got: false
+Checking (ecl,zzz)
+got: false
+Checking (ecl,amb)
+got: true
+Checking (byr,1992)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (pid,602211075)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,188cm)
+got: true
+Checking (hcl,#888785)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1981)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (pid,848099019)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,168cm)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1974)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (iyr,2013)
+got: true
+Checking (hgt,151cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (cid,135)
+got: true
+Checking (pid,313553018)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1986)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (pid,676008782)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,182cm)
+got: true
+Checking (hcl,#733820)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1949)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (pid,833874339)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,159cm)
+got: true
+Checking (hcl,#602927)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1926)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (pid,131549376)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,182cm)
+got: true
+Checking (hcl,#6b5442)
+got: true
+Checking (ecl,dne)
+got: false
+Checking (ecl,grt)
+got: false
+Checking (ecl,oth)
+got: true
+Checking (byr,1945)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (pid,599182089)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,136)
+got: false
+Checking (ecl,hzl)
+got: true
+Checking (byr,1949)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,159cm)
+got: true
+Checking (hcl,#b6652a)
+got: true
+Checking (cid,133)
+got: true
+Checking (pid,9833212692)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,1980)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,175cm)
+got: true
+Checking (hcl,#7d3b0c)
+got: true
+Checking (cid,140)
+got: true
+Checking (pid,400508366)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1986)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (pid,856817592)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,159cm)
+got: true
+Checking (hcl,#cfa07d)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1996)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,166cm)
+got: true
+Checking (hcl,#410645)
+got: true
+Checking (cid,178)
+got: true
+Checking (pid,337713295)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,1929)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (pid,013408674)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,187cm)
+got: true
+Checking (hcl,#fffffd)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1986)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,150cm)
+got: true
+Checking (hcl,#cfa07d)
+got: true
+Checking (cid,331)
+got: true
+Checking (pid,616063053)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1978)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (pid,914726069)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,155cm)
+got: true
+Checking (hcl,#694989)
+got: true
+Checking (ecl,blu)
+got: true
+Checking (byr,1970)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (pid,139464317)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,72in)
+got: true
+Checking (hcl,#fffffd)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1994)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,171cm)
+got: true
+Checking (hcl,#6b5442)
+got: true
+Checking (cid,228)
+got: true
+Checking (pid,538884417)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1954)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,186cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (cid,264)
+got: true
+Checking (pid,304101929)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1987)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (pid,384983241)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,183cm)
+got: true
+Checking (hcl,z)
+got: false
+Checking (ecl,#8ea705)
+got: false
+Checking (ecl,hzl)
+got: true
+Checking (byr,1974)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,184cm)
+got: true
+Checking (hcl,#c0946f)
+got: true
+Checking (cid,299)
+got: true
+Checking (pid,285451524)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1974)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (iyr,2013)
+got: true
+Checking (hgt,151cm)
+got: true
+Checking (hcl,#602927)
+got: true
+Checking (cid,209)
+got: true
+Checking (pid,322935162)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1970)
+got: true
+Checking (eyr,2034)
+got: false
+Checking (ecl,gry)
+got: true
+Checking (byr,1926)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (pid,727347794)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,160cm)
+got: true
+Checking (hcl,#c0946f)
+got: true
+Checking (ecl,grn)
+got: true
+Checking (byr,1974)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (pid,933155590)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,167cm)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1967)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,170cm)
+got: true
+Checking (hcl,#f9f576)
+got: true
+Checking (cid,173)
+got: true
+Checking (pid,439696954)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1994)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (pid,308548232)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,162cm)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1924)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,169cm)
+got: true
+Checking (hcl,#cfa07d)
+got: true
+Checking (cid,274)
+got: true
+Checking (pid,028266367)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1995)
+got: true
+Checking (eyr,2025)
+got: true
+Checking (pid,819047484)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,160cm)
+got: true
+Checking (hcl,#602927)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1942)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,158cm)
+got: true
+Checking (hcl,#efcc98)
+got: true
+Checking (cid,334)
+got: true
+Checking (pid,660383456)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1920)
+got: true
+Checking (eyr,2024)
+got: true
+Checking (pid,236377188)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,165cm)
+got: true
+Checking (hcl,#7d3b0c)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,2002)
+got: true
+Checking (eyr,2028)
+got: true
+Checking (pid,428826816)
+got: true
+Checking (iyr,2017)
+got: true
+Checking (hgt,174cm)
+got: true
+Checking (hcl,#7d3b0c)
+got: true
+Checking (ecl,dne)
+got: false
+Checking (ecl,amb)
+got: true
+Checking (byr,1923)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,165cm)
+got: true
+Checking (hcl,#efcc98)
+got: true
+Checking (cid,73)
+got: true
+Checking (pid,358236477)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1989)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,72cm)
+got: false
+Checking (ecl,utc)
+got: false
+Checking (ecl,grn)
+got: true
+Checking (byr,1927)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,175cm)
+got: true
+Checking (hcl,#341e13)
+got: true
+Checking (cid,339)
+got: true
+Checking (pid,638808763)
+got: true
+Checking (ecl,hzl)
+got: true
+Checking (byr,1994)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,163cm)
+got: true
+Checking (hcl,#623a2f)
+got: true
+Checking (cid,160)
+got: true
+Checking (pid,569304871)
+got: true
+Checking (ecl,#a16571)
+got: false
+Checking (ecl,hzl)
+got: true
+Checking (byr,1965)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (pid,617693914)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,157cm)
+got: true
+Checking (hcl,#7d3b0c)
+got: true
+Checking (ecl,gry)
+got: true
+Checking (byr,1956)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (pid,547158528)
+got: true
+Checking (iyr,2011)
+got: true
+Checking (hgt,189cm)
+got: true
+Checking (hcl,#602927)
+got: true
+Checking (ecl,#1ecd0e)
+got: false
+Checking (ecl,amb)
+got: true
+Checking (byr,1959)
+got: true
+Checking (eyr,2021)
+got: true
+Checking (pid,102521439)
+got: true
+Checking (iyr,2014)
+got: true
+Checking (hgt,190cm)
+got: true
+Checking (hcl,#fffffd)
+got: true
+Checking (ecl,xry)
+got: false
+Checking (ecl,brn)
+got: true
+Checking (byr,1993)
+got: true
+Checking (eyr,2023)
+got: true
+Checking (iyr,2019)
+got: true
+Checking (hgt,183cm)
+got: true
+Checking (hcl,#efcc98)
+got: true
+Checking (cid,251)
+got: true
+Checking (pid,821190245)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1981)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,183cm)
+got: true
+Checking (hcl,#524e2e)
+got: true
+Checking (cid,131)
+got: true
+Checking (pid,037981572)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1934)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,62in)
+got: true
+Checking (hcl,#18171d)
+got: true
+Checking (cid,64)
+got: true
+Checking (pid,343039563)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1994)
+got: true
+Checking (eyr,2026)
+got: true
+Checking (pid,374199356)
+got: true
+Checking (iyr,2015)
+got: true
+Checking (hgt,169cm)
+got: true
+Checking (hcl,#733820)
+got: true
+Checking (ecl,amb)
+got: true
+Checking (byr,1988)
+got: true
+Checking (eyr,2022)
+got: true
+Checking (pid,394267581)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,185cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (ecl,#be3b70)
+got: false
+Checking (ecl,amb)
+got: true
+Checking (byr,1946)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (iyr,2012)
+got: true
+Checking (hgt,159cm)
+got: true
+Checking (hcl,#a97842)
+got: true
+Checking (cid,228)
+got: true
+Checking (pid,805319194)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,1958)
+got: true
+Checking (eyr,2020)
+got: true
+Checking (pid,276122958)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,171cm)
+got: true
+Checking (hcl,#c0946f)
+got: true
+Checking (ecl,utc)
+got: false
+Checking (ecl,xry)
+got: false
+Checking (ecl,#ae10f9)
+got: false
+Checking (ecl,blu)
+got: true
+Checking (byr,2008)
+got: false
+Checking (ecl,gry)
+got: true
+Checking (byr,1936)
+got: true
+Checking (eyr,2030)
+got: true
+Checking (pid,156329184)
+got: true
+Checking (iyr,2010)
+got: true
+Checking (hgt,67in)
+got: true
+Checking (hcl,#efcc98)
+got: true
+Checking (ecl,oth)
+got: true
+Checking (byr,2002)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (iyr,2018)
+got: true
+Checking (hgt,76in)
+got: true
+Checking (hcl,#866857)
+got: true
+Checking (cid,110)
+got: true
+Checking (pid,474249956)
+got: true
+Checking (ecl,brn)
+got: true
+Checking (byr,1934)
+got: true
+Checking (eyr,2029)
+got: true
+Checking (pid,901756621)
+got: true
+Checking (iyr,2016)
+got: true
+Checking (hgt,193cm)
+got: true
+Checking (hcl,#b6652a)
+got: true
+defined function checkValid
+validPassports: Array[Map[String, String]] = Array(
+  HashMap(
+    "ecl" -> "blu",
+    "byr" -> "1940",
+    "eyr" -> "2025",
+    "iyr" -> "2017",
+    "hgt" -> "159cm",
+    "hcl" -> "#ceb3a1",
+    "cid" -> "139",
+    "pid" -> "561068005"
+  ),
+  HashMap(
+    "ecl" -> "blu",
+    "byr" -> "1982",
+    "eyr" -> "2023",
+    "iyr" -> "2011",
+    "hgt" -> "68in",
+    "hcl" -> "#7d3b0c",
+    "cid" -> "211",
+    "pid" -> "006632702"
+...
+res46_2: Int = 137
+#+end_example
+
+* Day 5
+** inputs
+#+begin_src amm
+
+import ammonite.ops._
+
+val pathInp : Path = pwd/"inputs"
+val inputs = read.lines! pathInp/"day5.txt"
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+import ammonite.ops._
+
+
+pathInp: Path = /home/ashfaqf/Code/AdventOfCode/2020/inputs
+inputs: IndexedSeq[String] = ArraySeq(
+  "BFFBFBFLRL",
+  "BFBFBBBLRR",
+  "BFBFBFBLRR",
+  "BFBFFFFRLR",
+  "BBFFBBFRRR",
+  "FBBBFFFRLL",
+  "FFBFBFFLLL",
+  "BBFBFFFRLL",
+  "FBBBFFBLRR",
+  "FFFFBFFRRL",
+  "BFBFBFBRLL",
+  "FFBFFBBLLL",
+  "BFFBBFFRLR",
+  "FBBFFFFLRR",
+  "FBFBFFBRRR",
+  "FFBFFBBRRR",
+  "FBBBFFFRRL",
+  "FFBBBBFRRL",
+  "BFFBBBBLLL",
+...
+#+end_example
+
+** part 1
+#+begin_src amm
+
+def findLeaf(firstHalf:Char,secondHalf:Char)(l:List[Char],start:Int,end:Int):Int ={
+
+  l match {
+   case x::xs if(x==firstHalf) => findLeaf(firstHalf,secondHalf)(xs,start,(start+end)/2)
+   case x::xs if(x==secondHalf) => findLeaf(firstHalf,secondHalf)(xs,(start+end)/2+1,end)
+   case x::Nil if(x==firstHalf) => start
+   case x::Nil if(x==secondHalf) => end
+   case Nil =>
+start
+  }
+}
+
+def findRow = findLeaf('F','B')(_,_,_)
+def findCol = findLeaf('L','R')(_,_,_)
+
+
+def getRowAndCol(s:String)={
+ val row = findRow(s.take(7).toList,0,127)
+ val col =  findCol(s.drop(7).toList,0,7)
+(row,col)
+}
+
+def p1(s:String)={
+val (r,c) = getRowAndCol(s)
+r*8+c
+}
+
+val seats = inputs.map(p1(_))
+#+end_src
+
+
+** Part 2
+#+begin_src amm
+
+(11 to seats.length) zip seats.sorted filter{case (x,y) => x!=y}
+
+#+end_src
